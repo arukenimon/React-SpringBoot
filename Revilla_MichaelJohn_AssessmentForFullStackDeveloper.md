@@ -1,8 +1,8 @@
----
+<!-- ---
 title: Full-Stack Developer Assessment
 author: MichaelJohn Revilla
 date: 2026-05-27
----
+--- -->
 
 # Full-Stack Developer Assessment — Write-up
 
