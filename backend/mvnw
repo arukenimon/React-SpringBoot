@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# Minimal Maven Wrapper (script-only). Downloads Maven on first run, then delegates.
+set -e
+
+PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROPS_FILE="${PROJECT_DIR}/.mvn/wrapper/maven-wrapper.properties"
+
+if [ ! -f "${PROPS_FILE}" ]; then
+  echo "[mvnw] missing ${PROPS_FILE}" >&2
+  exit 1
+fi
+
+DIST_URL="$(grep -E '^distributionUrl=' "${PROPS_FILE}" | sed 's/^distributionUrl=//' | tr -d '\r')"
+if [ -z "${DIST_URL}" ]; then
+  echo "[mvnw] distributionUrl is missing from maven-wrapper.properties" >&2
+  exit 1
+fi
+
+DIST_FILE="$(basename "${DIST_URL}")"                  # apache-maven-3.9.9-bin.zip
+DIST_DIRNAME="${DIST_FILE%-bin.zip}"                   # apache-maven-3.9.9
+
+WRAPPER_CACHE="${HOME}/.m2/wrapper/dists/${DIST_DIRNAME}"
+MAVEN_HOME="${WRAPPER_CACHE}/${DIST_DIRNAME}"
+
+if [ ! -x "${MAVEN_HOME}/bin/mvn" ]; then
+  echo "[mvnw] downloading ${DIST_URL}"
+  mkdir -p "${WRAPPER_CACHE}"
+  ZIP_PATH="${WRAPPER_CACHE}/${DIST_FILE}"
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL "${DIST_URL}" -o "${ZIP_PATH}"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -q "${DIST_URL}" -O "${ZIP_PATH}"
+  else
+    echo "[mvnw] neither curl nor wget is available" >&2
+    exit 1
+  fi
+  if command -v unzip >/dev/null 2>&1; then
+    unzip -q "${ZIP_PATH}" -d "${WRAPPER_CACHE}"
+  else
+    # Fallback to PowerShell on Windows
+    powershell.exe -NoProfile -Command "Expand-Archive -Path '${ZIP_PATH}' -DestinationPath '${WRAPPER_CACHE}' -Force"
+  fi
+  rm -f "${ZIP_PATH}"
+  chmod +x "${MAVEN_HOME}/bin/mvn" 2>/dev/null || true
+fi
+
+# Make sure JAVA_HOME points to a JDK (not a JRE) with version >= 17.
+java_version_major() {
+  local jh="$1" out major
+  [ -x "${jh}/bin/java" ] || [ -x "${jh}/bin/java.exe" ] || return 1
+  if [ -x "${jh}/bin/javac" ] || [ -x "${jh}/bin/javac.exe" ]; then :; else return 1; fi
+  out="$("${jh}/bin/java" -version 2>&1 | head -n1)" || return 1
+  # examples: openjdk version "17.0.10" / openjdk version "26.0.1"
+  major="$(echo "${out}" | sed -E 's/.*version "([0-9]+)\..*/\1/')"
+  [ -z "${major}" ] && return 1
+  echo "${major}"
+}
+
+needs_jdk_search=1
+if [ -n "${JAVA_HOME}" ]; then
+  if v="$(java_version_major "${JAVA_HOME}")" && [ "${v}" -ge 17 ]; then
+    needs_jdk_search=0
+  fi
+fi
+
+if [ "${needs_jdk_search}" = "1" ]; then
+  for candidate in \
+      "/c/Program Files/Java/openjdk/jdk-26.0.1" \
+      "/c/Program Files/Java/openjdk/jdk-23"* \
+      "/c/Program Files/Java/openjdk/jdk-22"* \
+      "/c/Program Files/Java/openjdk/jdk-21"* \
+      "/c/Program Files/Java/openjdk/jdk-17"* \
+      "/c/Program Files/Eclipse Adoptium/jdk-21"* \
+      "/c/Program Files/Eclipse Adoptium/jdk-17"* \
+      "/c/Program Files/Microsoft/jdk-21"* \
+      "/c/Program Files/Microsoft/jdk-17"*; do
+    [ -d "${candidate}" ] || continue
+    if v="$(java_version_major "${candidate}")" && [ "${v}" -ge 17 ]; then
+      export JAVA_HOME="${candidate}"
+      break
+    fi
+  done
+fi
+
+if [ -z "${JAVA_HOME}" ] || ! java_version_major "${JAVA_HOME}" >/dev/null 2>&1; then
+  echo "[mvnw] Could not locate a JDK 17+ install. Set JAVA_HOME to a JDK." >&2
+  exit 1
+fi
+
+export PATH="${JAVA_HOME}/bin:${PATH}"
+exec "${MAVEN_HOME}/bin/mvn" "$@"
