@@ -118,7 +118,7 @@ The modification flow is the heart of the assessment. The design choice:
 - **MUI v6** — broad component coverage out of the box; lets the work focus on layout and flow, not pixels.
 - **React Router v6** — standard, declarative routing.
 - **TanStack Query** — handles loading/error/cache/refetch states elegantly; turns the FE into a thin orchestration layer.
-- **react-hook-form + Zod** — minimal re-renders, schema-driven validation, single source of truth for form shape.
+- **react-hook-form + Zod** — minimal re-renders, schema-driven validation, single source of truth for form shape. Schemas live in `src/schemas/` (separate from domain `interface`s in `src/types/`) so validation is reusable and testable in isolation from the components.
 - **Vite** — fast dev server with a built-in `/api` proxy.
 
 ---
@@ -146,7 +146,8 @@ full-stack-dev-assessment/
     └── src/
         ├── main.tsx, App.tsx, theme.ts
         ├── api/         (client.ts, users.ts, addresses.ts)
-        ├── types/       (index.ts — mirrors BE DTOs)
+        ├── types/       (index.ts — domain interfaces, mirrors BE DTOs)
+        ├── schemas/     (profile.schema.ts, address.schema.ts — Zod schemas + inferred form-value types)
         ├── pages/       (UserListPage, UserDetailPage, NotFoundPage)
         └── components/  (AppLayout, ProfileForm, AddressCard, AddressFormDialog, ConfirmDialog)
 ```
