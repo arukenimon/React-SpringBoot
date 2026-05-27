@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import {
   Alert,
   Button,
@@ -13,19 +12,8 @@ import {
   TextField,
 } from '@mui/material';
 import { useAddAddress, useUpdateAddress } from '@/api/addresses';
+import { addressSchema, type AddressFormValues } from '@/schemas/address.schema';
 import type { Address, AddressRequest } from '@/types';
-
-const schema = z.object({
-  label: z.string().trim().min(1, 'Required').max(40),
-  line1: z.string().trim().min(1, 'Required').max(120),
-  line2: z.string().trim().max(120).optional().or(z.literal('')),
-  city: z.string().trim().min(1, 'Required').max(80),
-  state: z.string().trim().max(80).optional().or(z.literal('')),
-  postalCode: z.string().trim().min(1, 'Required').max(20),
-  country: z.string().trim().min(1, 'Required').max(80),
-});
-
-type FormValues = z.infer<typeof schema>;
 
 interface Props {
   open: boolean;
@@ -35,7 +23,7 @@ interface Props {
   onSaved?: (mode: 'create' | 'edit') => void;
 }
 
-const emptyDefaults: FormValues = {
+const emptyDefaults: AddressFormValues = {
   label: '',
   line1: '',
   line2: '',
@@ -55,8 +43,8 @@ export function AddressFormDialog({ open, userId, address, onClose, onSaved }: P
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+  } = useForm<AddressFormValues>({
+    resolver: zodResolver(addressSchema),
     defaultValues: emptyDefaults,
   });
 

@@ -1,18 +1,10 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Alert, Box, Button, Grid2 as Grid, Paper, Stack, TextField, Typography } from '@mui/material';
 import { useUpdateUser } from '@/api/users';
+import { profileSchema, type ProfileFormValues } from '@/schemas/profile.schema';
 import type { User } from '@/types';
-
-const schema = z.object({
-  email: z.string().trim().email('Enter a valid email'),
-  firstName: z.string().trim().min(1, 'Required').max(80),
-  lastName: z.string().trim().min(1, 'Required').max(80),
-});
-
-type FormValues = z.infer<typeof schema>;
 
 interface Props {
   user: User;
@@ -22,7 +14,7 @@ interface Props {
 export function ProfileForm({ user, onSaved }: Props) {
   const updateUser = useUpdateUser(user.id);
 
-  const defaults: FormValues = {
+  const defaults: ProfileFormValues = {
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
@@ -33,8 +25,8 @@ export function ProfileForm({ user, onSaved }: Props) {
     handleSubmit,
     reset,
     formState: { errors, isDirty, isSubmitting },
-  } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+  } = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
     defaultValues: defaults,
   });
 
