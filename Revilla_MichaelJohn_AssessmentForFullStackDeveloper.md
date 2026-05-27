@@ -9,7 +9,7 @@ date: 2026-05-27
 **Candidate:** MichaelJohn Revilla
 **Project:** User Admin (User & Address management)
 **Date:** 2026-05-27
-**Repository:** git@github.com:arukenimon/React-SpringBoot.git
+**Repository:** [git@github.com:arukenimon/React-SpringBoot.git](https://github.com/arukenimon/React-SpringBoot)
 
 ---
 
